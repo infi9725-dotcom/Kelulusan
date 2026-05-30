@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aplikasi Kelulusan - SDN 22 Tanah Keras</title>
+    
+    <!-- FAVICON LOGO SEKOLAH -->
+    <link rel="icon" type="image/png" href="https://iili.io/C2r2LNt.png">
+    <link rel="shortcut icon" type="image/png" href="https://iili.io/C2r2LNt.png">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brightblue: {
+                            50: '#f0f7ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7', // Bright Sky Blue Primary
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#031b2e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f0f7ff;
+            color: #1e293b;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e0f2fe;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0ea5e9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0284c7;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed top-4 right-4 left-4 md:left-auto md:right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- LOADING SCREEN OVERLAY (Gaya Bulat Lebih Kecil & Presisi) -->
+    <div id="global-loading" class="fixed inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-4 transition-all duration-500">
+        <div class="relative w-12 h-12 mb-3 flex items-center justify-center">
+            <!-- Spinner Ring -->
+            <div class="absolute inset-0 rounded-full border-4 border-brightblue-100"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-brightblue-600 border-t-transparent animate-spin"></div>
+            <!-- Logo Sekolah (Berada tepat di tengah spinner kecil) -->
+            <img src="https://iili.io/C2r2LNt.png" onerror="this.onerror=null; this.src='https://iili.io/C2r2LNt.th.png';" alt="SDN 22" class="w-5 h-5 object-contain animate-pulse">
+        </div>
+        <h3 id="loading-title" class="text-sm md:text-base font-bold text-brightblue-950">Memuat Data Sekolah...</h3>
+        <p id="loading-subtitle" class="text-[10px] md:text-[11px] text-slate-500 mt-0.5 text-center">Sinkronisasi langsung dengan Google Sheets</p>
+    </div>
+
+    <!-- APP WRAPPER -->
+    <div id="app" class="relative w-full flex-grow flex flex-col overflow-x-hidden">
+
+        <!-- ==================== USER LANDING PAGE ==================== -->
+        <main id="user-view" class="flex-grow flex flex-col justify-center items-center px-4 py-8 md:py-16 z-10 w-full max-w-lg mx-auto">
+            
+            <!-- Logo & Header Sekolah -->
+            <div class="text-center mb-6 md:mb-8 w-full">
+                <!-- Frame Logo Sekolah -->
+                <div class="inline-flex items-center justify-center p-2 bg-white border border-brightblue-200 rounded-2xl mb-3 shadow-md shadow-brightblue-100 w-20 h-20 md:w-24 md:h-24">
+                    <img src="https://iili.io/C2r2LNt.png" onerror="this.onerror=null; this.src='https://iili.io/C2r2LNt.th.png';" alt="Logo SDN 22 Tanah Keras" class="w-full h-full object-contain">
+                </div>
+                <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight text-brightblue-950 mb-1">
+                    APLIKASI KELULUSAN
+                </h1>
+                <p class="text-sm md:text-lg font-semibold text-brightblue-600">
+                    SDN 22 Tanah Keras
+                </p>
+                <div class="w-16 h-1 bg-gradient-to-r from-brightblue-500 to-sky-400 mx-auto mt-3 rounded-full"></div>
+            </div>
+
+            <!-- COUNTDOWN TIMER SECTION -->
+            <div id="countdown-card" class="w-full bg-white border border-brightblue-100 rounded-2xl p-4 md:p-6 mb-6 md:mb-8 text-center shadow-md shadow-brightblue-100/30">
+                <!-- Tampilan Hitung Mundur Aktif -->
+                <div id="countdown-active-content">
+                    <p class="text-xs md:text-sm uppercase tracking-wider text-brightblue-700 font-bold mb-3 md:mb-4">Hitung Mundur Pengumuman</p>
+                    <div id="countdown" class="grid grid-cols-4 gap-1.5 md:gap-3 justify-center">
+                        <div class="bg-brightblue-50 border border-brightblue-100 rounded-xl p-2 md:p-3 shadow-2xs">
+                            <span id="days" class="block text-xl md:text-3xl font-extrabold text-brightblue-800">00</span>
+                            <span class="text-[9px] md:text-xs text-brightblue-600 uppercase font-medium">Hari</span>
+                        </div>
+                        <div class="bg-brightblue-50 border border-brightblue-100 rounded-xl p-2 md:p-3 shadow-2xs">
+                            <span id="hours" class="block text-xl md:text-3xl font-extrabold text-brightblue-800">00</span>
+                            <span class="text-[9px] md:text-xs text-brightblue-600 uppercase font-medium">Jam</span>
+                        </div>
+                        <div class="bg-brightblue-50 border border-brightblue-100 rounded-xl p-2 md:p-3 shadow-2xs">
+                            <span id="minutes" class="block text-xl md:text-3xl font-extrabold text-brightblue-800">00</span>
+                            <span class="text-[9px] md:text-xs text-brightblue-600 uppercase font-medium">Menit</span>
+                        </div>
+                        <div class="bg-brightblue-50 border border-brightblue-100 rounded-xl p-2 md:p-3 shadow-2xs">
+                            <span id="seconds" class="block text-xl md:text-3xl font-extrabold text-brightblue-800">00</span>
+                            <span class="text-[9px] md:text-xs text-brightblue-600 uppercase font-medium">Detik</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tampilan Hitung Mundur 10 Detik Terakhir (Sangat Menarik & Responsif HP) -->
+                <div id="countdown-final-ten" class="hidden flex flex-col items-center justify-center py-3">
+                    <p class="text-xs uppercase tracking-wider text-red-500 font-extrabold mb-3 animate-pulse">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Bersiaplah! Pengumuman Segera Dibuka
+                    </p>
+                    <div class="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
+                        <!-- Glowing Rings -->
+                        <div class="absolute inset-0 rounded-full bg-brightblue-100 animate-ping opacity-25"></div>
+                        <div class="absolute inset-1.5 rounded-full border-4 border-dashed border-brightblue-500 animate-spin" style="animation-duration: 4s;"></div>
+                        <div class="absolute inset-0 rounded-full border-4 border-brightblue-600 shadow-md"></div>
+                        <!-- Giant Animated Number -->
+                        <span id="final-seconds" class="text-4xl md:text-5xl font-black text-brightblue-700 transition-all duration-300 transform scale-100">10</span>
+                    </div>
+                </div>
+
+                <!-- Tampilan Notifikasi Kelulusan Selesai ( June 02, 2026 10:00 WIB ) -->
+                <div id="countdown-finished-content" class="hidden flex flex-col items-center p-4 bg-green-50/50 rounded-xl border border-green-200">
+                    <div class="inline-flex items-center justify-center p-2.5 bg-green-100 border border-green-300 text-green-600 rounded-full mb-2 shadow-2xs animate-bounce">
+                        <i class="fa-solid fa-bell text-2xl"></i>
+                    </div>
+                    <h3 class="text-sm md:text-lg font-black text-green-700 tracking-wide text-center leading-relaxed">
+                        PENGUMUMAN KELULUSAN SUDAH DIBUKA,
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-700 font-bold mt-1 text-center leading-relaxed">
+                        SILAKAN CEK NAMA LENGKAP DI FORM INI
+                    </p>
+                </div>
+            </div>
+
+            <!-- SEARCH & CHECK STUDENT SECTION -->
+            <div class="w-full bg-white border border-brightblue-100 rounded-2xl p-5 md:p-6 shadow-lg shadow-brightblue-100/40 relative">
+                <h3 class="text-base md:text-lg font-bold text-brightblue-950 mb-4 text-center">
+                    Cek Status Kelulusan Anda
+                </h3>
+                
+                <!-- Search Box (Terkunci jika waktu hitung mundur belum tiba) -->
+                <div class="space-y-3">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-user-graduate text-brightblue-500 text-sm md:text-base"></i>
+                        </span>
+                        <input type="text" id="search-input" disabled
+                            class="w-full pl-9 pr-4 py-2.5 md:py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 placeholder-slate-400 text-sm focus:outline-none transition-all cursor-not-allowed" 
+                            placeholder="Pengumuman belum dibuka...">
+                    </div>
+                    
+                    <button id="btn-search-student" onclick="searchAndVerifyStudent()" disabled 
+                        class="w-full bg-slate-300 text-slate-500 font-bold py-2.5 md:py-3 px-6 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-not-allowed text-sm md:text-base">
+                        <i class="fa-solid fa-magnifying-glass"></i> Cek Status Siswa
+                    </button>
+                </div>
+
+                <!-- Informasi Banner (Tampil hanya saat pengumuman belum dibuka) -->
+                <div id="countdown-info-banner" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] md:text-xs text-blue-800 text-center font-bold leading-relaxed shadow-2xs animate-pulse">
+                    <i class="fa-solid fa-circle-info mr-1"></i> Informasi : Pengumuman Di buka Tanggal 02 Juni 2026 , Jam 10.00 Wib Pagi, Harap Bersabar
+                </div>
+
+                <!-- Info status pencarian (ditampilkan jika input salah/tidak cocok) -->
+                <div id="search-feedback" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 text-center font-medium animate-fade-in">
+                    <!-- Loaded dynamically -->
+                </div>
+
+                <!-- ==================== SELECTED STUDENT BIODATA CARD (OPTIMAL HP) ==================== -->
+                <div id="selected-student-card" class="hidden bg-gradient-to-b from-white to-brightblue-50/40 border border-brightblue-150 rounded-xl p-4 md:p-6 text-center animate-fade-in mb-2 mt-4 shadow-sm">
+                    <!-- Photo Container Frame -->
+                    <div class="flex justify-center mb-3">
+                        <div id="selected-photo-container" class="w-24 h-24 md:w-28 md:h-28 rounded-xl border-2 border-brightblue-400 overflow-hidden bg-white flex items-center justify-center shadow-md">
+                            <!-- Loaded Dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Biodata Fields -->
+                    <div class="space-y-1 mb-4">
+                        <p class="text-[10px] md:text-xs text-brightblue-600 uppercase font-bold tracking-wider">Siswa Terpilih</p>
+                        <h4 id="selected-name" class="text-base md:text-xl font-extrabold text-brightblue-950 truncate max-w-full"></h4>
+                        <div class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white border border-brightblue-100 rounded-full text-[10px] md:text-xs text-slate-600 font-mono font-medium shadow-2xs">
+                            <i class="fa-solid fa-address-card text-brightblue-500"></i>
+                            <span id="selected-nisn"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Trigger Button for announcement -->
+                    <button onclick="checkSelectedGraduation()" class="w-full bg-gradient-to-r from-brightblue-600 to-sky-600 hover:from-brightblue-500 hover:to-sky-500 text-white font-bold py-2.5 md:py-3.5 px-4 rounded-xl shadow-md shadow-brightblue-200/50 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 text-sm md:text-base">
+                        <i class="fa-solid fa-square-poll-vertical text-base animate-pulse"></i> Cek Hasil Kelulusan
+                    </button>
+                </div>
+                
+                <p class="text-[10px] md:text-xs text-center text-slate-500 mt-4 leading-relaxed">Tulis nama lengkap Anda sesuai data sekolah atau masukkan nomor NISN Anda dengan benar.</p>
+            </div>
+
+        </main>
+
+        <!-- ==================== ADMIN FLOATING ACTION BUTTON ==================== -->
+        <div class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50">
+            <button onclick="toggleAdminModal()" class="w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-brightblue-50 hover:bg-brightblue-50 rounded-full flex items-center justify-center shadow-lg shadow-brightblue-300 hover:scale-105 active:scale-95 transition-all focus:outline-none p-1.5" title="Admin Panel">
+                <div id="admin-icon-container" class="w-full h-full flex items-center justify-center overflow-hidden rounded-full">
+                    <img src="https://iili.io/C2r2LNt.png" onerror="this.onerror=null; this.src='https://iili.io/C2r2LNt.th.png';" alt="Logo Admin" class="w-full h-full object-contain">
+                </div>
+            </button>
+        </div>
+
+
+        <!-- ==================== ADMIN LOGIN MODAL ==================== -->
+        <div id="admin-login-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white border border-brightblue-100 rounded-2xl w-full max-w-sm p-5 md:p-6 relative shadow-2xl">
+                <!-- Close Button -->
+                <button onclick="toggleAdminModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+                
+                <div class="text-center mb-5">
+                    <div class="w-10 h-10 bg-brightblue-50 border border-brightblue-100 rounded-xl flex items-center justify-center mx-auto mb-2 text-brightblue-600">
+                        <i class="fa-solid fa-shield-halved text-xl"></i>
+                    </div>
+                    <h4 class="text-lg font-bold text-brightblue-950">Login Administrator</h4>
+                    <p class="text-[11px] text-slate-500">Gunakan kredensial resmi untuk mengakses panel</p>
+                </div>
+
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <!-- Error Message -->
+                    <div id="login-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg p-2.5 mb-3">
+                        <i class="fa-solid fa-circle-exclamation mr-1.5"></i> Username atau Sandi salah!
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-1">Username</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                <i class="fa-solid fa-user text-xs"></i>
+                            </span>
+                            <input type="text" id="admin-username" required class="w-full pl-8 pr-3 py-2 bg-brightblue-50/50 border border-brightblue-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-brightblue-500" placeholder="Masukkan Username">
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-1">Sandi</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                <i class="fa-solid fa-lock text-xs"></i>
+                            </span>
+                            <input type="password" id="admin-password" required class="w-full pl-8 pr-3 py-2 bg-brightblue-50/50 border border-brightblue-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-brightblue-500" placeholder="Masukkan Sandi">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-brightblue-600 hover:bg-brightblue-500 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors shadow-md">
+                        <i class="fa-solid fa-right-to-bracket mr-1"></i> Masuk Panel
+                    </button>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- ==================== ANNOUNCEMENT RESULT MODAL (OPTIMASI HP) ==================== -->
+        <div id="announcement-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4 hidden">
+            <div id="announcement-content" class="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border bg-white transition-all transform scale-95 opacity-0 duration-300">
+                
+                <!-- Gradient Header (Compact for mobile) -->
+                <div class="p-5 text-center text-white relative">
+                    <button onclick="closeAnnouncement()" class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                    
+                    <div id="status-icon-bg" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center shadow-lg mb-3 text-3xl">
+                        <!-- Loaded dynamically -->
+                    </div>
+                    
+                    <h2 class="text-xs uppercase tracking-wider font-semibold opacity-90 text-brightblue-50">SURAT KEPUTUSAN KELULUSAN</h2>
+                    <h3 class="text-lg md:text-xl font-black mt-0.5" id="school-announcement-header">SDN 22 TANAH KERAS</h3>
+                </div>
+
+                <!-- Info Body -->
+                <div class="bg-white p-4 md:p-5 space-y-3.5">
+                    <div class="text-center">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Tahun Ajaran 2025/2026</p>
+                    </div>
+
+                    <!-- Student Photo in Announcement -->
+                    <div class="flex justify-center">
+                        <div id="ann-photo-container" class="w-24 h-24 rounded-xl border-2 border-brightblue-200 overflow-hidden bg-brightblue-50/50 flex items-center justify-center shadow-md">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="bg-brightblue-50/50 rounded-xl p-3 border border-brightblue-100 space-y-1.5 text-xs md:text-sm">
+                        <div class="flex justify-between border-b border-brightblue-100 pb-1.5">
+                            <span class="text-slate-500">Nama Lengkap</span>
+                            <span class="font-bold text-slate-800" id="ann-name">-</span>
+                        </div>
+                        <div class="flex justify-between border-b border-brightblue-100 pb-1.5">
+                            <span class="text-slate-500">NISN / NIS</span>
+                            <span class="font-semibold text-slate-700 font-mono" id="ann-nisn">-</span>
+                        </div>
+                        <div class="flex justify-between pt-1">
+                            <span class="text-slate-500">Status</span>
+                            <span class="font-black" id="ann-status">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Message Box -->
+                    <div id="ann-message-box" class="rounded-xl p-3 text-xs md:text-sm text-center leading-relaxed">
+                        <!-- Loaded dynamically -->
+                    </div>
+
+                    <button onclick="closeAnnouncement()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2.5 rounded-xl text-xs md:text-sm transition-all flex items-center justify-center gap-1.5 shadow-md">
+                        <i class="fa-solid fa-circle-check"></i> Tutup Pengumuman
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ==================== ADMIN DASHBOARD LAYOUT ==================== -->
+        <div id="admin-panel" class="fixed inset-0 bg-brightblue-50 z-40 flex hidden">
+            
+            <!-- Sidebar (Desktop View) -->
+            <aside class="w-64 bg-gradient-to-b from-brightblue-850 to-brightblue-950 border-r border-brightblue-800/20 flex flex-col justify-between hidden md:flex text-white" style="background-color: #032b45;">
+                <div>
+                    <!-- School Logo Area -->
+                    <div class="p-6 border-b border-white/10">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white rounded-xl p-1 flex items-center justify-center shrink-0 shadow-sm">
+                                <img src="https://iili.io/C2r2LNt.png" onerror="this.onerror=null; this.src='https://iili.io/C2r2LNt.th.png';" alt="Logo SDN 22 Tanah Keras" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <h1 class="text-sm font-bold text-white tracking-wide">PANEL ADMIN</h1>
+                                <p class="text-[10px] text-brightblue-200 font-medium">SDN 22 Tanah Keras</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Items -->
+                    <nav class="p-4 space-y-2">
+                        <button onclick="switchAdminTab('beranda')" id="tab-btn-beranda" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all text-brightblue-100 hover:bg-white/10">
+                            <i class="fa-solid fa-chart-pie w-5"></i> Beranda
+                        </button>
+                        <button onclick="switchAdminTab('kelulusan')" id="tab-btn-kelulusan" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all text-brightblue-100 hover:bg-white/10">
+                            <i class="fa-solid fa-user-plus w-5"></i> Input Kelulusan
+                        </button>
+                        <button onclick="switchAdminTab('rekap')" id="tab-btn-rekap" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all text-brightblue-100 hover:bg-white/10">
+                            <i class="fa-solid fa-file-invoice w-5"></i> Rekap Kelulusan
+                        </button>
+                        <button onclick="switchAdminTab('tka')" id="tab-btn-tka" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all text-brightblue-100 hover:bg-white/10">
+                            <i class="fa-solid fa-file-pdf w-5"></i> Nilai TKA
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Admin Signout -->
+                <div class="p-4 border-t border-white/10">
+                    <button onclick="handleAdminLogout()" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-300 hover:bg-red-500/10 rounded-xl transition-all">
+                        <i class="fa-solid fa-right-from-bracket"></i> Keluar Aplikasi
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Admin Content Area -->
+            <div class="flex-grow flex flex-col overflow-hidden w-full">
+                <!-- Admin Header Bar -->
+                <header class="bg-white border-b border-brightblue-100 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <!-- Mobile Burger Menu Trigger -->
+                        <button onclick="toggleMobileMenu()" class="text-brightblue-600 md:hidden hover:text-brightblue-800 p-1">
+                            <i class="fa-solid fa-bars text-lg"></i>
+                        </button>
+                        <h2 id="admin-current-tab-title" class="text-base md:text-xl font-bold text-brightblue-950">Beranda</h2>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 md:gap-3">
+                        <span class="inline-flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <span class="text-[10px] md:text-xs font-semibold text-slate-600">Admin</span>
+                        <button onclick="handleAdminLogout()" class="md:hidden text-red-600 font-bold text-[10px] hover:text-red-800 px-2 py-1 rounded bg-red-50 border border-red-100">Logout</button>
+                    </div>
+                </header>
+
+                <!-- Mobile Navigation Menu Overlay (Compact and Elegant) -->
+                <div id="mobile-menu" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs md:hidden flex justify-start hidden">
+                    <div class="w-60 h-full p-5 flex flex-col justify-between text-white" style="background-color: #032b45;">
+                        <div class="space-y-5">
+                            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 bg-white rounded-lg p-1 flex items-center justify-center shrink-0">
+                                        <img src="https://iili.io/C2r2LNt.png" onerror="this.onerror=null; this.src='https://iili.io/C2r2LNt.th.png';" alt="Logo SDN" class="w-full h-full object-contain">
+                                    </div>
+                                    <div>
+                                        <h1 class="text-xs font-bold text-white leading-tight">PANEL ADMIN</h1>
+                                        <p class="text-[9px] text-brightblue-200">SDN 22 Tanah Keras</p>
+                                    </div>
+                                </div>
+                                <button onclick="toggleMobileMenu()" class="text-white/60 hover:text-white p-1">
+                                    <i class="fa-solid fa-xmark text-base"></i>
+                                </button>
+                            </div>
+                            
+                            <nav class="space-y-1">
+                                <button onclick="switchAdminTab('beranda'); toggleMobileMenu();" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-medium rounded-xl text-brightblue-100 hover:bg-white/10">
+                                    <i class="fa-solid fa-chart-pie w-4"></i> Beranda
+                                </button>
+                                <button onclick="switchAdminTab('kelulusan'); toggleMobileMenu();" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-medium rounded-xl text-brightblue-100 hover:bg-white/10">
+                                    <i class="fa-solid fa-user-plus w-4"></i> Input Kelulusan
+                                </button>
+                                <button onclick="switchAdminTab('rekap'); toggleMobileMenu();" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-medium rounded-xl text-brightblue-100 hover:bg-white/10">
+                                    <i class="fa-solid fa-file-invoice w-4"></i> Rekap Kelulusan
+                                </button>
+                                <button onclick="switchAdminTab('tka'); toggleMobileMenu();" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-medium rounded-xl text-brightblue-100 hover:bg-white/10">
+                                    <i class="fa-solid fa-file-pdf w-4"></i> Nilai TKA
+                                </button>
+                            </nav>
+                        </div>
+                        
+                        <button onclick="handleAdminLogout(); toggleMobileMenu();" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-semibold text-red-300 hover:bg-red-500/10 rounded-xl">
+                            <i class="fa-solid fa-right-from-bracket w-4"></i> Keluar Aplikasi
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Scrollable Tab Panels -->
+                <main class="flex-grow overflow-y-auto p-4 md:p-6 bg-brightblue-50/50">
+                    
+                    <!-- TAB 1: BERANDA -->
+                    <div id="tab-content-beranda" class="space-y-4 md:space-y-6">
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Card Total -->
+                            <div class="bg-white border border-brightblue-100 p-4 md:p-5 rounded-xl flex items-center justify-between shadow-xs">
+                                <div class="space-y-0.5">
+                                    <p class="text-xs text-slate-500 font-medium">Total Siswa</p>
+                                    <p id="stat-total" class="text-2xl font-extrabold text-brightblue-950">0</p>
+                                </div>
+                                <div class="p-2.5 bg-brightblue-50 border border-brightblue-100 rounded-lg text-brightblue-600">
+                                    <i class="fa-solid fa-users text-lg"></i>
+                                </div>
+                            </div>
+                            <!-- Card Lulus -->
+                            <div class="bg-white border border-brightblue-100 p-4 md:p-5 rounded-xl flex items-center justify-between shadow-xs">
+                                <div class="space-y-0.5">
+                                    <p class="text-xs text-slate-500 font-medium">Siswa Lulus</p>
+                                    <p id="stat-lulus" class="text-2xl font-extrabold text-green-600">0</p>
+                                </div>
+                                <div class="p-2.5 bg-green-50 border border-green-100 rounded-lg text-green-600">
+                                    <i class="fa-solid fa-circle-check text-lg"></i>
+                                </div>
+                            </div>
+                            <!-- Card Tidak Lulus -->
+                            <div class="bg-white border border-brightblue-100 p-4 md:p-5 rounded-xl flex items-center justify-between shadow-xs">
+                                <div class="space-y-0.5">
+                                    <p class="text-xs text-slate-500 font-medium">Siswa Tidak Lulus</p>
+                                    <p id="stat-tidak-lulus" class="text-2xl font-extrabold text-red-600">0</p>
+                                </div>
+                                <div class="p-2.5 bg-red-50 border border-red-100 rounded-lg text-red-600">
+                                    <i class="fa-solid fa-circle-xmark text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info Banner -->
+                        <div class="bg-white border border-brightblue-100 p-5 rounded-xl flex flex-col sm:flex-row gap-4 sm:items-center shadow-xs">
+                            <div class="w-12 h-12 shrink-0 bg-brightblue-50 border border-brightblue-100 rounded-xl flex items-center justify-center text-brightblue-600 mx-auto sm:mx-0">
+                                <i class="fa-solid fa-info-circle text-2xl"></i>
+                            </div>
+                            <div class="space-y-0.5 text-center sm:text-left">
+                                <h4 class="text-sm md:text-base font-bold text-brightblue-950">Kelola Kelulusan Online SDN 22</h4>
+                                <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                                    Aplikasi terhubung langsung secara online dengan <span class="text-brightblue-600 font-bold">Google Sheets</span>. Semua perubahan data, penambahan siswa, dan unggahan foto yang dilakukan di panel ini akan langsung tersinkronisasi otomatis untuk semua peramban secara real-time.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: MANAJEMEN KELULUSAN (FORM INPUT & EDIT) -->
+                    <div id="tab-content-kelulusan" class="space-y-6 hidden">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            
+                            <!-- Form Box -->
+                            <div class="bg-white border border-brightblue-100 p-5 rounded-2xl shadow-xs h-fit">
+                                <h4 id="form-title" class="text-sm md:text-base font-bold text-brightblue-950 mb-3.5">Tambah Data Siswa</h4>
+                                
+                                <form id="student-form" onsubmit="handleStudentSubmit(event)" class="space-y-3.5">
+                                    <input type="hidden" id="student-id">
+                                    
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Nama Siswa</label>
+                                        <input type="text" id="form-name" required class="w-full px-3 py-2 bg-brightblue-50/50 border border-brightblue-200 rounded-xl text-slate-800 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-brightblue-500" placeholder="Ketik nama lengkap">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">NISN / NIS</label>
+                                        <input type="text" id="form-nisn" required class="w-full px-3 py-2 bg-brightblue-50/50 border border-brightblue-200 rounded-xl text-slate-800 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-brightblue-500" placeholder="Contoh: 0123456789">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Keterangan Kelulusan</label>
+                                        <select id="form-status" required class="w-full px-3 py-2 bg-brightblue-50/50 border border-brightblue-200 rounded-xl text-slate-800 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-brightblue-500">
+                                            <option value="" disabled selected>Pilih Keterangan Data</option>
+                                            <option value="LULUS">LULUS</option>
+                                            <option value="TIDAK LULUS">TIDAK LULUS</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- UPLOAD GAMBAR / FOTO SISWA -->
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Foto Siswa</label>
+                                        <div class="flex items-center gap-3 mt-1">
+                                            <!-- Preview Mini Box -->
+                                            <div id="form-photo-preview" class="w-12 h-12 bg-brightblue-50 border border-brightblue-200 rounded-xl overflow-hidden flex items-center justify-center text-slate-400 relative shrink-0">
+                                                <i class="fa-solid fa-user-tie text-lg text-brightblue-400"></i>
+                                            </div>
+                                            <!-- Upload Input Button -->
+                                            <div class="flex-grow">
+                                                <label for="form-photo" class="cursor-pointer inline-flex items-center justify-center w-full px-3 py-2 bg-brightblue-50 hover:bg-brightblue-100 border border-brightblue-200 rounded-xl text-[10px] font-semibold text-brightblue-700 transition-colors gap-1.5">
+                                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                                    <span id="form-photo-label">Unggah Foto</span>
+                                                </label>
+                                                <input type="file" id="form-photo" accept="image/*" class="hidden" onchange="processFile(this)">
+                                                <input type="hidden" id="form-photo-base64">
+                                            </div>
+                                        </div>
+                                        <p class="text-[9px] text-slate-500 mt-1">Format: JPG/PNG, maksimal 10MB (akan dikompresi otomatis).</p>
+                                    </div>
+
+                                    <div class="pt-1.5 flex gap-2">
+                                        <button type="submit" id="btn-submit" class="flex-grow bg-brightblue-600 hover:bg-brightblue-500 text-white font-semibold py-2 rounded-xl transition-all shadow-md text-xs flex items-center justify-center gap-1.5">
+                                            <span>Simpan Data</span>
+                                        </button>
+                                        <button type="button" id="btn-cancel" onclick="resetForm()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 px-3.5 py-2 rounded-xl transition-all text-xs">
+                                            Batal
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- List & Quick Search Table -->
+                            <div class="lg:col-span-2 bg-white border border-brightblue-100 p-4 md:p-5 rounded-2xl shadow-xs flex flex-col overflow-hidden">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 w-full">
+                                    <h4 class="text-sm md:text-base font-bold text-brightblue-950">Daftar Data Kelulusan</h4>
+                                    <!-- Search -->
+                                    <input type="text" id="admin-search-input" oninput="filterAdminTable()" class="px-3.5 py-1.5 bg-brightblue-50/50 border border-brightblue-200 rounded-xl text-slate-800 text-xs w-full sm:w-48" placeholder="Cari nama atau NISN...">
+                                </div>
+
+                                <div class="overflow-x-auto w-full -mx-4 px-4 sm:mx-0 sm:px-0">
+                                    <table class="w-full text-left border-collapse min-w-[500px]">
+                                        <thead>
+                                            <tr class="border-b border-brightblue-100 text-[10px] text-brightblue-700 uppercase tracking-wider">
+                                                <th class="py-2.5 px-3">No</th>
+                                                <th class="py-2.5 px-3">Foto</th>
+                                                <th class="py-2.5 px-3">Nama</th>
+                                                <th class="py-2.5 px-3">NISN / NIS</th>
+                                                <th class="py-2.5 px-3">Keterangan</th>
+                                                <th class="py-2.5 px-3 text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-student-tbody" class="text-xs divide-y divide-brightblue-50 text-slate-700">
+                                            <!-- Loaded via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: REKAP KELULUSAN -->
+                    <div id="tab-content-rekap" class="space-y-4 hidden">
+                        <div class="bg-white border border-brightblue-100 p-4 md:p-5 rounded-2xl shadow-xs">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-brightblue-100 pb-3 mb-4">
+                                <div>
+                                    <h4 class="text-sm md:text-base font-bold text-brightblue-950">Rekapitulasi Kelulusan</h4>
+                                    <p class="text-[10px] text-slate-500">SDN 22 Tanah Keras, Tahun Ajaran 2025/2026</p>
+                                </div>
+                                <button onclick="printRekap()" class="w-full sm:w-auto bg-brightblue-600 hover:bg-brightblue-500 text-white font-semibold py-1.5 px-3.5 rounded-xl text-xs transition-all flex items-center gap-1.5 justify-center shadow-md">
+                                    <i class="fa-solid fa-print"></i> Cetak Rekap
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5 text-center">
+                                <div class="bg-brightblue-50/50 border border-brightblue-100 p-2.5 rounded-xl">
+                                    <p class="text-[9px] text-slate-500 uppercase font-semibold">Total Siswa</p>
+                                    <p id="rekap-total" class="text-sm md:text-base font-extrabold text-brightblue-950 mt-0.5">0</p>
+                                </div>
+                                <div class="bg-brightblue-50/50 border border-brightblue-100 p-2.5 rounded-xl">
+                                    <p class="text-[9px] text-slate-500 uppercase font-semibold">Lulus</p>
+                                    <p id="rekap-lulus" class="text-sm md:text-base font-extrabold text-green-600 mt-0.5">0%</p>
+                                </div>
+                                <div class="bg-brightblue-50/50 border border-brightblue-100 p-2.5 rounded-xl">
+                                    <p class="text-[9px] text-slate-500 uppercase font-semibold">TIDAK LULUS</p>
+                                    <p id="rekap-tidak-lulus" class="text-sm md:text-base font-extrabold text-red-600 mt-0.5">0%</p>
+                                </div>
+                                <div class="bg-brightblue-50/50 border border-brightblue-100 p-2.5 rounded-xl">
+                                    <p class="text-[9px] text-slate-500 uppercase font-semibold">Persentase</p>
+                                    <p id="rekap-persentase" class="text-sm md:text-base font-extrabold text-brightblue-600 mt-0.5">0%</p>
+                                </div>
+                            </div>
+
+                            <!-- Printable Table Area -->
+                            <div class="overflow-x-auto bg-brightblue-50/30 rounded-xl border border-brightblue-100 p-1 w-full">
+                                <table class="w-full text-left border-collapse min-w-[400px]">
+                                    <thead>
+                                        <tr class="border-b border-brightblue-100 text-[10px] text-brightblue-700 uppercase">
+                                            <th class="py-2 px-3">No</th>
+                                            <th class="py-2 px-3">Nama Lengkap</th>
+                                            <th class="py-2 px-3">NISN / NIS</th>
+                                            <th class="py-2 px-3">Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rekap-student-tbody" class="text-xs divide-y divide-brightblue-100 text-slate-700">
+                                        <!-- Loaded via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: NILAI TKA -->
+                    <div id="tab-content-tka" class="space-y-6 hidden">
+                        <div class="bg-white border border-brightblue-100 p-6 md:p-8 rounded-2xl shadow-sm max-w-2xl mx-auto text-center">
+                            <div class="w-12 h-12 md:w-16 h-16 bg-brightblue-50 border border-brightblue-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 text-brightblue-600">
+                                <i class="fa-solid fa-file-signature text-2xl md:text-3xl"></i>
+                            </div>
+                            <h4 class="text-base md:text-xl font-bold text-brightblue-950 mb-1.5">Dokumen Nilai TKA (Tes Kemampuan Akademik)</h4>
+                            <p class="text-xs md:text-sm text-slate-600 mb-5 md:mb-6 leading-relaxed">
+                                Halaman ini digunakan untuk mengakses dokumen resmi Nilai TKA Siswa Kelas VI SDN 22 Tanah Keras. Klik tombol di bawah ini untuk membuka dokumen PDF yang tersimpan di Google Drive.
+                            </p>
+                            <a href="https://drive.google.com/file/d/1mYydxJOS2dcE1dqB0f_Lj7q1VFrcH9q2/view?usp=sharing" target="_blank" 
+                               class="inline-flex items-center justify-center gap-2 bg-brightblue-600 hover:bg-brightblue-500 text-white font-bold py-2.5 md:py-3.5 px-6 md:px-8 rounded-xl shadow-md shadow-brightblue-200/50 transition-all text-xs md:text-sm">
+                                <i class="fa-solid fa-file-pdf text-base"></i>
+                                <span>Buka Dokumen Nilai TKA</span>
+                            </a>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer id="main-footer" class="py-4 border-t border-brightblue-100 bg-white text-center text-[10px] md:text-xs text-slate-500 z-10 w-full">
+        <p>© 2026 SDN 22 Tanah Keras. Hak Cipta Dilindungi.</p>
+    </footer>
+
+
+    <!-- ==================== LOGIC AND SCRIPTS ==================== -->
+    <script>
+        // =========================================================================
+        // SINKRONISASI AKTIF: URL Google Apps Script Web App
+        // =========================================================================
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzWIEr9ql0bHypmYAu_W9vuRh7q-2ZwF8h2wKmtJeWuktLWogyHaLaq-2UuNPKrfIf4/exec"; 
+
+        // Global State Variables
+        let students = [];
+        let selectedStudent = null;
+        let adminLoggedIn = false;
+
+        // Initialize App on Page Load
+        window.onload = function() {
+            // Jalankan hitung mundur tanggal 02 Juni 2026
+            startCountdown();
+
+            // Ambil data langsung dari Google Sheets API secara real-time
+            fetchDataFromGoogleSheet();
+        };
+
+        // --- CUSTOM TOAST NOTIFICATION SYSTEM ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            
+            // Base Class styling (Mobile friendly padding and fonts)
+            toast.className = "transform translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto flex items-center gap-2.5 px-3 py-2 md:px-4 md:py-3 rounded-xl shadow-md border text-xs md:text-sm font-semibold w-full md:max-w-sm";
+            
+            let bgClass = "bg-white text-slate-800 border-slate-200 shadow-slate-200/50";
+            let icon = '<i class="fa-solid fa-circle-info text-blue-500 text-sm md:text-base"></i>';
+            
+            if (type === 'success') {
+                bgClass = "bg-green-50 text-green-800 border-green-200 shadow-green-100/50";
+                icon = '<i class="fa-solid fa-circle-check text-green-600 text-base animate-bounce"></i>';
+            } else if (type === 'error') {
+                bgClass = "bg-red-50 text-red-800 border-red-200 shadow-red-100/50";
+                icon = '<i class="fa-solid fa-circle-exclamation text-red-600 text-base"></i>';
+            }
+            
+            toast.className += " " + bgClass;
+            toast.innerHTML = `${icon} <span class="truncate pr-1">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation in
+            setTimeout(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+                toast.classList.add("translate-y-0", "opacity-100");
+            }, 10);
+            
+            // Auto Remove after 3.5 seconds
+            setTimeout(() => {
+                toast.classList.remove("translate-y-0", "opacity-100");
+                toast.classList.add("-translate-y-2", "opacity-0");
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        }
+
+        // --- GOOGLE SPREADSHEETS INTEGRATION (GET DATA) ---
+        function fetchDataFromGoogleSheet(silent = false) {
+            if (!silent) {
+                showLoadingScreen("Memuat Data Sekolah...", "Sinkronisasi langsung dengan Google Sheets");
+            }
+
+            if (WEB_APP_URL === "ISI_DENGAN_URL_WEB_APP_ANDA") {
+                console.warn("Aplikasi berjalan menggunakan memori lokal karena URL Google Web App belum dimasukkan.");
+                const savedStudents = localStorage.getItem('sdn22_students');
+                students = savedStudents ? JSON.parse(savedStudents) : [];
+                
+                renderAdminDashboard();
+                hideLoadingScreen();
+                return;
+            }
+
+            // Request GET data ke Google Apps Script API
+            fetch(WEB_APP_URL)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === "SUCCESS") {
+                        students = result.data || [];
+                        localStorage.setItem('sdn22_students', JSON.stringify(students));
+                    } else {
+                        console.error("Gagal memuat data dari Google Sheets:", result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Kesalahan koneksi ke Google Sheet:", error);
+                    const savedStudents = localStorage.getItem('sdn22_students');
+                    students = savedStudents ? JSON.parse(savedStudents) : [];
+                })
+                .finally(() => {
+                    renderAdminDashboard();
+                    hideLoadingScreen();
+                });
+        }
+
+        // Menampilkan Layar Loading dengan parameter teks kustom
+        function showLoadingScreen(title, subtitle) {
+            document.getElementById("loading-title").innerText = title;
+            document.getElementById("loading-subtitle").innerText = subtitle;
+            
+            const loader = document.getElementById("global-loading");
+            loader.classList.remove("hidden");
+            loader.classList.add("flex");
+        }
+
+        // Menyembunyikan Layar Loading
+        function hideLoadingScreen() {
+            const loader = document.getElementById("global-loading");
+            loader.classList.add("opacity-0");
+            setTimeout(() => {
+                loader.classList.add("hidden");
+                loader.classList.remove("flex", "opacity-0");
+            }, 500);
+        }
+
+        // --- SAVE / UPDATE DATA TO GOOGLE SHEET (POST DATA) ---
+        function sendStudentDataToGoogleSheet(studentData, isDelete = false) {
+            if (isDelete) {
+                showLoadingScreen("Sedang Menghapus...", "Harap Tunggu, data sedang dihapus...");
+            } else {
+                showLoadingScreen("Sedang Menyimpan...", "Harap Tunggu, data sedang dikirim...");
+            }
+
+            if (WEB_APP_URL === "ISI_DENGAN_URL_WEB_APP_ANDA") {
+                if (isDelete) {
+                    students = students.filter(s => String(s.id) !== String(studentData.id));
+                } else {
+                    const idx = students.findIndex(s => String(s.id) === String(studentData.id));
+                    if (idx !== -1) {
+                        students[idx] = studentData;
+                    } else {
+                        students.push(studentData);
+                    }
+                }
+                saveToLocalStorage();
+                renderAdminDashboard();
+                hideLoadingScreen();
+                
+                if (isDelete) {
+                    showToast("Data Berhasil Dihapus!", "success");
+                } else {
+                    showToast("Data Berhasil Disimpan!", "success");
+                }
+                return;
+            }
+
+            const payload = {
+                action: isDelete ? "DELETE" : "SAVE",
+                id: isDelete ? studentData.id : undefined,
+                student: isDelete ? undefined : studentData
+            };
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                if (isDelete) {
+                    students = students.filter(s => String(s.id) !== String(studentData.id));
+                } else {
+                    const idx = students.findIndex(s => String(s.id) === String(studentData.id));
+                    if (idx !== -1) {
+                        students[idx] = studentData;
+                    } else {
+                        students.push(studentData);
+                    }
+                }
+                saveToLocalStorage();
+                renderAdminDashboard();
+                
+                hideLoadingScreen();
+
+                if (isDelete) {
+                    showToast("Data Berhasil Dihapus!", "success");
+                } else {
+                    showToast("Data Berhasil Disimpan!", "success");
+                }
+                
+                setTimeout(() => {
+                    fetchDataFromGoogleSheet(true);
+                }, 1000);
+            })
+            .catch(error => {
+                console.error("Gagal mengirim data ke Google Sheets:", error);
+                hideLoadingScreen();
+                showToast("Gagal menyimpan ke Google Sheets! Disimpan di memori lokal.", "error");
+            });
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('sdn22_students', JSON.stringify(students));
+        }
+
+        // --- TOGGLE SEARCH FORM (LOCK & UNLOCK LOGIC) ---
+        function enableSearchForm() {
+            const searchInput = document.getElementById("search-input");
+            const btnSearch = document.getElementById("btn-search-student");
+            const infoBanner = document.getElementById("countdown-info-banner");
+            
+            if (searchInput && btnSearch) {
+                searchInput.disabled = false;
+                searchInput.classList.remove("bg-slate-100", "text-slate-400", "cursor-not-allowed");
+                searchInput.classList.add("bg-brightblue-50/50", "text-slate-800", "focus:ring-2", "focus:ring-brightblue-500", "focus:border-transparent");
+                searchInput.placeholder = "Ketik Nama Lengkap atau NISN...";
+                
+                btnSearch.disabled = false;
+                btnSearch.classList.remove("bg-slate-300", "text-slate-500", "cursor-not-allowed");
+                btnSearch.classList.add("bg-brightblue-600", "hover:bg-brightblue-500", "text-white");
+            }
+            if (infoBanner) {
+                infoBanner.classList.add("hidden");
+            }
+        }
+
+        function disableSearchForm() {
+            const searchInput = document.getElementById("search-input");
+            const btnSearch = document.getElementById("btn-search-student");
+            const infoBanner = document.getElementById("countdown-info-banner");
+            
+            if (searchInput && btnSearch) {
+                searchInput.disabled = true;
+                searchInput.classList.add("bg-slate-100", "text-slate-400", "cursor-not-allowed");
+                searchInput.classList.remove("bg-brightblue-50/50", "text-slate-800", "focus:ring-2", "focus:ring-brightblue-500", "focus:border-transparent");
+                searchInput.placeholder = "Pengumuman belum dibuka...";
+                
+                btnSearch.disabled = true;
+                btnSearch.classList.add("bg-slate-300", "text-slate-500", "cursor-not-allowed");
+                btnSearch.classList.remove("bg-brightblue-600", "hover:bg-brightblue-500", "text-white");
+            }
+            if (infoBanner) {
+                infoBanner.classList.remove("hidden");
+            }
+        }
+
+        // --- COUNTDOWN LOGIC ---
+        function startCountdown() {
+            // Target: 02 Juni 2026 jam 10:00:00 WIB (UTC+7)
+            const targetDate = new Date("2026-06-02T10:00:00+07:00").getTime();
+
+            const interval = setInterval(function() {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                const activeContent = document.getElementById("countdown-active-content");
+                const finalTenContent = document.getElementById("countdown-final-ten");
+                const finishedContent = document.getElementById("countdown-finished-content");
+
+                if (distance <= 0) {
+                    clearInterval(interval);
+                    activeContent.classList.add("hidden");
+                    if (finalTenContent) finalTenContent.classList.add("hidden");
+                    finishedContent.classList.remove("hidden");
+                    
+                    // Buka gembok form pencarian kelulusan secara otomatis
+                    enableSearchForm();
+                    return;
+                }
+
+                // Pengkondisian form jika masih dalam proses hitung mundur (kunci form)
+                disableSearchForm();
+
+                const secondsTotal = Math.floor(distance / 1000);
+
+                // Jika waktu tersisa 10 detik atau kurang, masuk ke mode Hitung Mundur Raksasa 10-0
+                if (secondsTotal <= 10) {
+                    activeContent.classList.add("hidden");
+                    finishedContent.classList.add("hidden");
+                    if (finalTenContent) {
+                        finalTenContent.classList.remove("hidden");
+                        const secondsEl = document.getElementById("final-seconds");
+                        const currentSecText = secondsTotal.toString();
+                        
+                        if (secondsEl.innerText !== currentSecText) {
+                            secondsEl.innerText = currentSecText;
+                            
+                            // Efek visual ciut-kembang beranimasi kustom untuk hitungan mundur yang menarik
+                            secondsEl.classList.remove("scale-125");
+                            void secondsEl.offsetWidth; // Memicu reflow
+                            secondsEl.classList.add("scale-100");
+                        }
+                    }
+                } else {
+                    // Tampilan Hitung Mundur Reguler Aktif
+                    if (finalTenContent) finalTenContent.classList.add("hidden");
+                    activeContent.classList.remove("hidden");
+                    finishedContent.classList.add("hidden");
+
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.getElementById("days").innerText = days.toString().padStart(2, '0');
+                    document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
+                    document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
+                    document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
+                }
+            }, 200); // Mengecek lebih cepat (5 kali per detik) agar transisi detik terasa instan dan presisi
+        }
+
+        // --- PROSES KOMPRESI CITRA CLIENT-SIDE (MAKSIMAL 10 MB INPUT) ---
+        function processFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Batas maksimal file yang bisa dipilih: 10 MB
+            const maxSizeBytes = 10 * 1024 * 1024;
+            if (file.size > maxSizeBytes) {
+                showToast("Gambar terlalu besar! Maksimal berkas yang diizinkan adalah 10MB.", "error");
+                input.value = "";
+                return;
+            }
+
+            // Tunjukkan status kompresi pada label tombol
+            const originalLabel = document.getElementById("form-photo-label").innerText;
+            document.getElementById("form-photo-label").innerText = "Mengompresi...";
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Membuat elemen Canvas untuk memodifikasi resolusi pasfoto secara proporsional
+                    const canvas = document.createElement("canvas");
+                    const MAX_WIDTH = 400; // Standar optimal pasfoto sekolah
+                    const MAX_HEIGHT = 400;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Konversi ke format JPEG dengan kompresi kualitas 0.75 (sangat ringan namun tajam)
+                    const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
+
+                    // Menyimpan Base64 yang sudah terkompresi (< 40 KB) ke form tersembunyi
+                    document.getElementById("form-photo-base64").value = compressedBase64;
+                    
+                    // Memperbarui Pratonton Gambar
+                    const previewBox = document.getElementById("form-photo-preview");
+                    previewBox.innerHTML = `<img src="${compressedBase64}" class="w-full h-full object-cover">`;
+                    
+                    // Mengembalikan teks label
+                    document.getElementById("form-photo-label").innerText = "Ganti Foto";
+                    showToast("Foto berhasil diunggah & dioptimalkan!", "success");
+                };
+                img.onerror = function() {
+                    showToast("Gagal memproses file gambar.", "error");
+                    document.getElementById("form-photo-label").innerText = originalLabel;
+                };
+                img.src = e.target.result;
+            };
+            reader.onerror = function() {
+                showToast("Gagal membaca berkas.", "error");
+                document.getElementById("form-photo-label").innerText = originalLabel;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- SINKRONISASI PENCARIAN MANDIRI TERBARU (TANPA DROPDOWN PILIHAN) ---
+        function searchAndVerifyStudent() {
+            const inputVal = document.getElementById("search-input").value.trim().toLowerCase();
+            const feedbackContainer = document.getElementById("search-feedback");
+            const biodataCard = document.getElementById("selected-student-card");
+            
+            // Sembunyikan modul visual yang terbuka sebelumnya
+            feedbackContainer.classList.add("hidden");
+            biodataCard.classList.add("hidden");
+            selectedStudent = null;
+
+            if (inputVal === "") {
+                feedbackContainer.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Kolom pencarian kosong. Silakan ketik nama atau NISN Anda terlebih dahulu!`;
+                feedbackContainer.classList.remove("hidden");
+                return;
+            }
+
+            if (students.length === 0) {
+                feedbackContainer.innerHTML = `<i class="fa-solid fa-database mr-1.5"></i> Data siswa belum disinkronkan dari Google Sheets.`;
+                feedbackContainer.classList.remove("hidden");
+                return;
+            }
+
+            // Mencari siswa yang namanya atau NISN-nya cocok secara presisi
+            const matched = students.find(student => 
+                student.name.toLowerCase() === inputVal || 
+                student.name.toLowerCase().includes(inputVal) ||
+                String(student.nisn) === inputVal
+            );
+
+            if (matched) {
+                // Berhasil Verifikasi Siswa
+                selectedStudent = matched;
+                
+                // Isi Gambar Foto Siswa ke Kartu Biodata
+                const photoContainer = document.getElementById("selected-photo-container");
+                if (matched.photo) {
+                    photoContainer.innerHTML = `<img src="${matched.photo}" class="w-full h-full object-cover">`;
+                } else {
+                    photoContainer.innerHTML = `<i class="fa-solid fa-user-graduate text-4xl text-brightblue-500"></i>`;
+                }
+
+                // Isi detail Biodata ke Kartu
+                document.getElementById("selected-name").innerText = matched.name;
+                document.getElementById("selected-nisn").innerText = matched.nisn;
+                
+                // Tampilkan Kartu Biodata secara halus
+                biodataCard.classList.remove("hidden");
+                biodataCard.scrollIntoView({ behavior: 'smooth' });
+                showToast("Siswa berhasil ditemukan!", "success");
+            } else {
+                // Tidak Ada Kecocokan Data
+                feedbackContainer.innerHTML = `<i class="fa-solid fa-user-slash mr-1.5"></i> Nama atau NISN "${document.getElementById("search-input").value}" tidak ditemukan. Silakan periksa kembali ejaan nama lengkap Anda!`;
+                feedbackContainer.classList.remove("hidden");
+            }
+        }
+
+        // Trigger Pencarian Dinamis lewat Tombol keyboard "Enter"
+        document.getElementById("search-input")?.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                searchAndVerifyStudent();
+            }
+        });
+
+        // Cek Hasil Kelulusan (Membuka Surat Pengumuman)
+        function checkSelectedGraduation() {
+            if (!selectedStudent) return;
+            
+            // Muat data dasar ke modal pengumuman
+            document.getElementById("ann-name").innerText = selectedStudent.name;
+            document.getElementById("ann-nisn").innerText = selectedStudent.nisn;
+
+            // Muat foto ke modal pengumuman
+            const modalPhotoContainer = document.getElementById("ann-photo-container");
+            if (selectedStudent.photo) {
+                modalPhotoContainer.innerHTML = `<img src="${selectedStudent.photo}" class="w-full h-full object-cover">`;
+            } else {
+                modalPhotoContainer.innerHTML = `<i class="fa-solid fa-user-graduate text-5xl text-brightblue-500"></i>`;
+            }
+
+            const isLulus = selectedStudent.status === "LULUS";
+            const iconBg = document.getElementById("status-icon-bg");
+            const annStatus = document.getElementById("ann-status");
+            const messageBox = document.getElementById("ann-message-box");
+            const annHeader = document.getElementById("announcement-content");
+
+            if (isLulus) {
+                // Konfigurasi visual modal status LULUS (Mobile friendly size)
+                annHeader.className = "w-full max-w-sm md:max-w-md rounded-2xl overflow-hidden shadow-2xl border border-green-500/30 bg-white transition-all transform duration-300";
+                annHeader.firstElementChild.className = "p-5 text-center text-white relative bg-gradient-to-r from-green-500 to-emerald-600";
+                
+                iconBg.className = "w-14 h-14 md:w-16 md:h-16 mx-auto rounded-full flex items-center justify-center shadow-lg mb-2 text-2xl md:text-3xl bg-white/20 text-white animate-bounce";
+                iconBg.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+                
+                annStatus.className = "text-xs font-black px-2.5 py-0.5 bg-green-50 border border-green-500/40 text-green-700 rounded-full";
+                annStatus.innerText = "LULUS";
+                
+                messageBox.className = "rounded-xl p-3 text-xs md:text-sm text-center bg-green-50 border border-green-200 text-green-800 leading-relaxed";
+                messageBox.innerHTML = `Selamat kepada <strong>${selectedStudent.name}</strong>! <br> Anda dinyatakan <strong>LULUS</strong> dari SDN 22 Tanah Keras. Tetaplah belajar keras di jenjang berikutnya!`;
+            } else {
+                // Konfigurasi visual modal status TIDAK LULUS
+                annHeader.className = "w-full max-w-sm md:max-w-md rounded-2xl overflow-hidden shadow-2xl border border-red-500/30 bg-white transition-all transform duration-300";
+                annHeader.firstElementChild.className = "p-5 text-center text-white relative bg-gradient-to-r from-red-500 to-rose-600";
+                
+                iconBg.className = "w-14 h-14 md:w-16 md:h-16 mx-auto rounded-full flex items-center justify-center shadow-lg mb-2 text-2xl md:text-3xl bg-white/20 text-white";
+                iconBg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+                
+                annStatus.className = "text-xs font-black px-2.5 py-0.5 bg-red-50 border border-red-500/40 text-red-700 rounded-full";
+                annStatus.innerText = "TIDAK LULUS";
+                
+                messageBox.className = "rounded-xl p-3 text-xs md:text-sm text-center bg-red-50 border border-red-200 text-red-800 leading-relaxed";
+                messageBox.innerHTML = `Mohon maaf kepada <strong>${selectedStudent.name}</strong>. <br> Anda dinyatakan <strong>BELUM LULUS</strong>. Harap hubungi wali kelas Anda untuk koordinasi lebih lanjut.`;
+            }
+
+            // Tampilkan Modal Hasil Pengumuman dengan menghapus class hidden
+            const modal = document.getElementById("announcement-modal");
+            modal.classList.remove("hidden");
+            
+            // Memicu reflow browser agar animasi transisi Tailwind berjalan
+            void annHeader.offsetWidth;
+            
+            // Tambahkan animasi scale dan opacity penuh
+            annHeader.classList.remove("scale-95", "opacity-0");
+            annHeader.classList.add("scale-100", "opacity-100");
+        }
+
+        function closeAnnouncement() {
+            const modal = document.getElementById("announcement-modal");
+            const annHeader = document.getElementById("announcement-content");
+            
+            // Jalankan transisi mengecil dan memudar keluar
+            annHeader.classList.remove("scale-100", "opacity-100");
+            annHeader.classList.add("scale-95", "opacity-0");
+            
+            setTimeout(() => {
+                modal.classList.add("hidden");
+                // Kosongkan dan setel ulang pencarian setelah modal benar-benar tertutup
+                document.getElementById("search-input").value = "";
+                document.getElementById("selected-student-card").classList.add("hidden");
+                document.getElementById("search-feedback").classList.add("hidden");
+                selectedStudent = null;
+            }, 300);
+        }
+
+        // --- ADMIN LOGIN MODAL CONTROLLERS ---
+        function toggleAdminModal() {
+            if (adminLoggedIn) {
+                document.getElementById("admin-panel").classList.remove("hidden");
+                document.getElementById("user-view").classList.add("hidden");
+                document.getElementById("main-footer").classList.add("hidden");
+                renderAdminDashboard();
+                return;
+            }
+            const modal = document.getElementById("admin-login-modal");
+            modal.classList.toggle("hidden");
+            
+            if(!modal.classList.contains("hidden")) {
+                document.getElementById("admin-username").focus();
+            }
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const userVal = document.getElementById("admin-username").value;
+            const passVal = document.getElementById("admin-password").value;
+            const errorBanner = document.getElementById("login-error");
+
+            if (userVal === "Admin" && passVal === "12345") {
+                adminLoggedIn = true;
+                errorBanner.classList.add("hidden");
+                document.getElementById("admin-login-modal").classList.add("hidden");
+                
+                document.getElementById("user-view").classList.add("hidden");
+                document.getElementById("main-footer").classList.add("hidden");
+                document.getElementById("admin-panel").classList.remove("hidden");
+
+                document.getElementById("admin-icon-container").innerHTML = '<i class="fa-solid fa-house-user text-base md:text-xl text-brightblue-600"></i>';
+
+                document.getElementById("admin-username").value = "";
+                document.getElementById("admin-password").value = "";
+
+                switchAdminTab('beranda');
+                renderAdminDashboard();
+                showToast("Selamat datang, Administrator!", "success");
+            } else {
+                errorBanner.classList.remove("hidden");
+            }
+        }
+
+        function handleAdminLogout() {
+            adminLoggedIn = false;
+            document.getElementById("admin-panel").classList.add("hidden");
+            document.getElementById("user-view").classList.remove("hidden");
+            document.getElementById("main-footer").classList.remove("hidden");
+            
+            document.getElementById("admin-icon-container").innerHTML = `
+                <img src="https://iili.io/C2r2LNt.png" onerror="this.onerror=null; this.src='https://iili.io/C2r2LNt.th.png';" class="w-full h-full object-contain">
+            `;
+            showToast("Berhasil keluar dari panel admin.", "success");
+        }
+
+
+        // --- ADMIN NAVIGATION CONTROLLERS ---
+        function switchAdminTab(tabName) {
+            document.getElementById("tab-content-beranda").classList.add("hidden");
+            document.getElementById("tab-content-kelulusan").classList.add("hidden");
+            document.getElementById("tab-content-rekap").classList.add("hidden");
+            document.getElementById("tab-content-tka").classList.add("hidden");
+
+            const buttons = ['beranda', 'kelulusan', 'rekap', 'tka'];
+            buttons.forEach(btn => {
+                const btnEl = document.getElementById(`tab-btn-${btn}`);
+                if (btnEl) {
+                    btnEl.className = "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all text-brightblue-100 hover:bg-white/10";
+                }
+            });
+
+            document.getElementById(`tab-content-${tabName}`).classList.remove("hidden");
+            
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            if (activeBtn) {
+                activeBtn.className = "w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl bg-white text-brightblue-850 shadow-md";
+            }
+
+            let titleText = "Beranda";
+            if (tabName === 'kelulusan') titleText = "Input Kelulusan";
+            if (tabName === 'rekap') titleText = "Rekap Kelulusan";
+            if (tabName === 'tka') titleText = "Nilai TKA";
+            document.getElementById("admin-current-tab-title").innerText = titleText;
+
+            if (tabName === 'rekap') {
+                renderRekapDashboard();
+            }
+        }
+
+        // Toggle mobile hamburger menu
+        function toggleMobileMenu() {
+            document.getElementById("mobile-menu").classList.toggle("hidden");
+        }
+
+
+        // --- ADMIN DASHBOARD STATS ---
+        function renderAdminDashboard() {
+            const total = students.length;
+            const lulus = students.filter(s => s.status === "LULUS").length;
+            const tidakLulus = total - lulus;
+
+            document.getElementById("stat-total").innerText = total;
+            document.getElementById("stat-lulus").innerText = lulus;
+            document.getElementById("stat-tidak-lulus").innerText = tidakLulus;
+
+            renderAdminStudentTable(students);
+        }
+
+        function renderAdminStudentTable(studentData) {
+            const tbody = document.getElementById("admin-student-tbody");
+            if (studentData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-slate-400 text-xs">
+                            Tidak ada data siswa. Silakan klik tombol "Simpan Data" di sebelah kiri untuk menambah siswa baru.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = studentData.map((student, idx) => {
+                const statusBadge = student.status === "LULUS" 
+                    ? '<span class="px-2 py-0.5 text-[10px] font-bold bg-green-50 border border-green-200 text-green-700 rounded-full">LULUS</span>' 
+                    : '<span class="px-2 py-0.5 text-[10px] font-bold bg-red-50 border border-red-200 text-red-700 rounded-full">TIDAK LULUS</span>';
+
+                const photoThumbnail = student.photo 
+                    ? `<img src="${student.photo}" class="w-8 h-8 rounded-full object-cover border border-brightblue-300 shadow-sm">`
+                    : `<div class="w-8 h-8 rounded-full bg-brightblue-100 border border-brightblue-200 flex items-center justify-center text-brightblue-600"><i class="fa-solid fa-user-tie text-xs"></i></div>`;
+
+                return `
+                    <tr class="hover:bg-brightblue-50/50 transition-colors">
+                        <td class="py-2.5 px-3 text-slate-400 text-xs font-mono">${idx + 1}</td>
+                        <td class="py-2.5 px-3">${photoThumbnail}</td>
+                        <td class="py-2.5 px-3 font-bold text-slate-800 text-xs md:text-sm">${student.name}</td>
+                        <td class="py-2.5 px-3 text-slate-600 text-xs font-mono">${student.nisn}</td>
+                        <td class="py-2.5 px-3">${statusBadge}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button onclick="editStudent('${student.id}')" class="p-1 md:p-1.5 bg-brightblue-50 border border-brightblue-200 text-brightblue-600 hover:bg-brightblue-100 rounded-lg transition-colors" title="Edit Data">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                </button>
+                                <button onclick="deleteStudent('${student.id}')" class="p-1 md:p-1.5 bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 rounded-lg transition-colors" title="Hapus Data">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterAdminTable() {
+            const query = document.getElementById("admin-search-input").value.toLowerCase();
+            const matched = students.filter(student => 
+                student.name.toLowerCase().includes(query) || 
+                String(student.nisn).includes(query)
+            );
+            renderAdminStudentTable(matched);
+        }
+
+        // --- CRUD LOGIC FOR STUDENT DATA ---
+        function handleStudentSubmit(event) {
+            event.preventDefault();
+            const studentId = document.getElementById("student-id").value;
+            const name = document.getElementById("form-name").value.trim().toUpperCase();
+            const nisn = document.getElementById("form-nisn").value.trim();
+            const status = document.getElementById("form-status").value;
+            const photo = document.getElementById("form-photo-base64").value;
+
+            // Pastikan jika ada ID edit, gunakan ID tersebut
+            const finalStudentId = studentId || Date.now().toString();
+            const studentObj = {
+                id: finalStudentId,
+                name: name,
+                nisn: nisn,
+                status: status,
+                photo: photo || ""
+            };
+
+            sendStudentDataToGoogleSheet(studentObj);
+            resetForm();
+        }
+
+        // FUNGSI EDIT SISWA (Pencarian berbasis ID string)
+        function editStudent(studentId) {
+            const student = students.find(s => String(s.id) === String(studentId));
+            if (!student) {
+                showToast("Gagal mengambil data siswa untuk diedit.", "error");
+                return;
+            }
+
+            document.getElementById("student-id").value = student.id;
+            document.getElementById("form-name").value = student.name;
+            document.getElementById("form-nisn").value = student.nisn;
+            document.getElementById("form-status").value = student.status;
+            
+            if (student.photo) {
+                document.getElementById("form-photo-base64").value = student.photo;
+                document.getElementById("form-photo-preview").innerHTML = `<img src="${student.photo}" class="w-full h-full object-cover">`;
+                document.getElementById("form-photo-label").innerText = "Ganti Foto";
+            } else {
+                document.getElementById("form-photo-base64").value = "";
+                document.getElementById("form-photo-preview").innerHTML = `<i class="fa-solid fa-user-tie text-xl text-brightblue-400"></i>`;
+                document.getElementById("form-photo-label").innerText = "Unggah Foto";
+            }
+
+            document.getElementById("form-title").innerText = "Edit Data Siswa";
+            const submitBtnSpan = document.getElementById("btn-submit").querySelector("span");
+            if (submitBtnSpan) submitBtnSpan.innerText = "Perbarui Data";
+
+            document.getElementById("btn-cancel").classList.remove("hidden");
+            
+            document.getElementById("student-form").scrollIntoView({ behavior: 'smooth' });
+            showToast("Silakan edit data siswa pada form.", "success");
+        }
+
+        function deleteStudent(studentId) {
+            const confirmation = confirm("Apakah Anda yakin ingin menghapus data siswa ini dari sistem Google Sheets?");
+            if (confirmation) {
+                const dummyStudent = { id: studentId };
+                sendStudentDataToGoogleSheet(dummyStudent, true);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById("student-id").value = "";
+            document.getElementById("form-name").value = "";
+            document.getElementById("form-nisn").value = "";
+            document.getElementById("form-status").value = "";
+            document.getElementById("form-photo").value = "";
+            document.getElementById("form-photo-base64").value = "";
+            
+            document.getElementById("form-photo-preview").innerHTML = `<i class="fa-solid fa-user-tie text-xl text-brightblue-400"></i>`;
+            document.getElementById("form-photo-label").innerText = "Unggah Foto";
+
+            document.getElementById("form-title").innerText = "Tambah Data Siswa";
+            
+            const submitBtnSpan = document.getElementById("btn-submit").querySelector("span");
+            if (submitBtnSpan) submitBtnSpan.innerText = "Simpan Data";
+
+            document.getElementById("btn-cancel").classList.add("hidden");
+        }
+
+        // --- TAB 3: REKAPITULASI GENERATOR ---
+        function renderRekapDashboard() {
+            const total = students.length;
+            const lulus = students.filter(s => s.status === "LULUS").length;
+            const tidakLulus = total - lulus;
+            const persentase = total > 0 ? Math.round((lulus / total) * 100) : 0;
+
+            document.getElementById("rekap-total").innerText = total + " Siswa";
+            document.getElementById("rekap-lulus").innerText = lulus + " Siswa";
+            document.getElementById("rekap-tidak-lulus").innerText = tidakLulus + " Siswa";
+            document.getElementById("rekap-persentase").innerText = persentase + "%";
+
+            const rekapTbody = document.getElementById("rekap-student-tbody");
+            if (students.length === 0) {
+                rekapTbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-12 text-center text-slate-400 text-xs">
+                            Belum ada rekapitulasi kelulusan. Isilah data siswa terlebih dahulu di tab Input Kelulusan.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            rekapTbody.innerHTML = students.map((student, idx) => {
+                const statusStyle = student.status === "LULUS" 
+                    ? "text-green-600 font-extrabold" 
+                    : "text-red-600 font-extrabold";
+
+                return `
+                    <tr class="hover:bg-brightblue-50/50 border-b border-brightblue-100">
+                        <td class="py-2.5 px-3 text-slate-400 text-xs font-mono">${idx + 1}</td>
+                        <td class="py-2.5 px-3 font-bold text-slate-800 text-xs">${student.name}</td>
+                        <td class="py-2.5 px-3 text-slate-600 font-mono text-xs">${student.nisn}</td>
+                        <td class="py-2.5 px-3 text-xs ${statusStyle}">${student.status}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- FUNGSI CETAK LAPORAN REKAPITULASI FORMAL ---
+        function printRekap() {
+            const total = students.length;
+            const lulus = students.filter(s => s.status === "LULUS").length;
+            const tidakLulus = total - lulus;
+            const persentase = total > 0 ? Math.round((lulus / total) * 100) : 0;
+            
+            let tableRows = students.map((student, idx) => `
+                <tr>
+                    <td style="text-align: center; font-family: monospace; padding: 6px 8px;">${idx + 1}</td>
+                    <td style="font-weight: bold; padding: 6px 8px;">${student.name}</td>
+                    <td style="font-family: monospace; padding: 6px 8px;">${student.nisn}</td>
+                    <td style="font-weight: bold; color: ${student.status === 'LULUS' ? '#16a34a' : '#dc2626'}; padding: 6px 8px;">${student.status}</td>
+                </tr>
+            `).join('');
+
+            if (students.length === 0) {
+                tableRows = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px; color: #64748b;">
+                            Belum ada data siswa kelulusan yang tersimpan.
+                        </td>
+                    </tr>
+                `;
+            }
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html lang="id">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Rekap Kelulusan SDN 22 Tanah Keras</title>
+                    <style>
+                        body {
+                            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                            color: #1e293b;
+                            background-color: #ffffff;
+                            padding: 20px;
+                            margin: 0;
+                        }
+                        .kop-surat {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 15px;
+                            border-bottom: 3px double #0f172a;
+                            padding-bottom: 10px;
+                            margin-bottom: 20px;
+                        }
+                        .kop-logo {
+                            width: 55px;
+                            height: 55px;
+                            object-fit: contain;
+                        }
+                        .kop-text {
+                            text-align: center;
+                        }
+                        .kop-text h1 {
+                            margin: 0;
+                            font-size: 16px;
+                            font-weight: 800;
+                            letter-spacing: 0.5px;
+                            color: #0f172a;
+                        }
+                        .kop-text h2 {
+                            margin: 1px 0 0 0;
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: #0284c7;
+                        }
+                        .kop-text p {
+                            margin: 3px 0 0 0;
+                            font-size: 10px;
+                            color: #475569;
+                            font-weight: 500;
+                        }
+                        .summary-table {
+                            width: 100%;
+                            margin-bottom: 20px;
+                            border-collapse: collapse;
+                        }
+                        .summary-table td {
+                            border: 1px solid #cbd5e1;
+                            background-color: #f8fafc;
+                            padding: 8px 10px;
+                            text-align: center;
+                            width: 25%;
+                        }
+                        .summary-table .label {
+                            font-size: 9px;
+                            text-transform: uppercase;
+                            font-weight: 700;
+                            color: #64748b;
+                            margin: 0 0 2px 0;
+                            letter-spacing: 0.5px;
+                        }
+                        .summary-table .value {
+                            font-size: 14px;
+                            font-weight: 800;
+                            color: #0f172a;
+                            margin: 0;
+                        }
+                        table.data-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 10px;
+                        }
+                        table.data-table th {
+                            background-color: #f1f5f9;
+                            border: 1px solid #cbd5e1;
+                            color: #0f172a;
+                            font-size: 10px;
+                            font-weight: 700;
+                            text-transform: uppercase;
+                            padding: 8px 10px;
+                            text-align: left;
+                        }
+                        table.data-table td {
+                            border: 1px solid #cbd5e1;
+                            font-size: 12px;
+                            color: #334155;
+                        }
+                        table.data-table tr:nth-child(even) {
+                            background-color: #f8fafc;
+                        }
+                        .footer-note {
+                            margin-top: 30px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: flex-end;
+                            font-size: 10px;
+                            color: #64748b;
+                            page-break-inside: avoid;
+                        }
+                        .signature {
+                            text-align: center;
+                            width: 180px;
+                        }
+                        .signature-space {
+                            height: 45px;
+                        }
+                        .signature-name {
+                            font-weight: 700;
+                            text-decoration: underline;
+                            color: #0f172a;
+                        }
+                        @media print {
+                            body {
+                                padding: 0;
+                            }
+                            .summary-table td {
+                                background-color: #f8fafc !important;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                            table.data-table th {
+                                background-color: #f1f5f9 !important;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="kop-surat">
+                        <img src="https://iili.io/C2r2LNt.png" class="kop-logo" alt="Logo Sekolah">
+                        <div class="kop-text">
+                            <h1>REKAPITULASI HASIL KELULUSAN KELAS VI (ENAM)</h1>
+                            <h2>SDN 22 TANAH KERAS</h2>
+                            <p>Kecamatan Tanah Keras • Tahun Ajaran 2025/2026</p>
+                        </div>
+                    </div>
+
+                    <table class="summary-table">
+                        <tr>
+                            <td>
+                                <div class="label">Total Siswa</div>
+                                <div class="value">${total} Siswa</div>
+                            </td>
+                            <td>
+                                <div class="label">Siswa Lulus</div>
+                                <div class="value" style="color: #16a34a;">${lulus} Siswa</div>
+                            </td>
+                            <td>
+                                <div class="label">Siswa Tidak Lulus</div>
+                                <div class="value" style="color: #dc2626;">${tidakLulus} Siswa</div>
+                            </td>
+                            <td>
+                                <div class="label">Persentase</div>
+                                <div class="value" style="color: #0284c7;">${persentase}%</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 8%; text-align: center;">No</th>
+                                <th>Nama Lengkap</th>
+                                <th style="width: 30%;">NISN / NIS</th>
+                                <th style="width: 25%;">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+
+                    <div class="footer-note">
+                        <div>
+                            <p style="margin: 0 0 2px 0;">Dicetak pada: ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB</p>
+                            <p style="margin: 0;">Sistem Kelulusan SDN 22 Tanah Keras Online</p>
+                        </div>
+                        <div class="signature">
+                            <p style="margin: 0 0 2px 0;">Mengetahui,</p>
+                            <p style="margin: 0;">Kepala Sekolah</p>
+                            <div class="signature-space"></div>
+                            <p class="signature-name" style="margin: 0 0 2px 0;">................................................</p>
+                            <p style="margin: 0;">NIP. ........................................</p>
+                        </div>
+                    </div>
+
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            setTimeout(function() { window.close(); }, 500);
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            showToast("Dokumen Laporan Cetak Rekap berhasil dibuat!", "success");
+        }
+
+    </script>
+</body>
+</html>
