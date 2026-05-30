@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aplikasi Kelulusan - SDN 22 Tanah Keras</title>
+    <title>Pengumuman Kelulusan</title>
     
     <!-- FAVICON LOGO SEKOLAH -->
     <link rel="icon" type="image/png" href="https://iili.io/C2r2LNt.png">
@@ -107,7 +107,7 @@
             <div id="countdown-card" class="w-full bg-white border border-brightblue-100 rounded-2xl p-4 md:p-6 mb-6 md:mb-8 text-center shadow-md shadow-brightblue-100/30">
                 <!-- Tampilan Hitung Mundur Aktif -->
                 <div id="countdown-active-content">
-                    <p class="text-xs md:text-sm uppercase tracking-wider text-brightblue-700 font-bold mb-3 md:mb-4">Hitung Mundur Pengumuman</p>
+                    <p class="text-xs md:text-sm uppercase tracking-wider text-brightblue-700 font-bold mb-3 md:mb-4">Waktu Pengumuman</p>
                     <div id="countdown" class="grid grid-cols-4 gap-1.5 md:gap-3 justify-center">
                         <div class="bg-brightblue-50 border border-brightblue-100 rounded-xl p-2 md:p-3 shadow-2xs">
                             <span id="days" class="block text-xl md:text-3xl font-extrabold text-brightblue-800">00</span>
@@ -215,7 +215,7 @@
                     </button>
                 </div>
                 
-                <p class="text-[10px] md:text-xs text-center text-slate-500 mt-4 leading-relaxed">Tulis nama lengkap Anda sesuai data sekolah atau masukkan nomor NISN Anda dengan benar.</p>
+                <p class="text-[10px] md:text-xs text-center text-slate-500 mt-4 leading-relaxed">Tulis nama lengkap.</p>
             </div>
 
         </main>
@@ -1161,7 +1161,7 @@
                 annStatus.innerText = "TIDAK LULUS";
                 
                 messageBox.className = "rounded-xl p-3 text-xs md:text-sm text-center bg-red-50 border border-red-200 text-red-800 leading-relaxed";
-                messageBox.innerHTML = `Mohon maaf kepada <strong>${selectedStudent.name}</strong>. <br> Anda dinyatakan <strong>BELUM LULUS</strong>. Harap hubungi wali kelas Anda untuk koordinasi lebih lanjut.`;
+                messageBox.innerHTML = `Mohon maaf kepada <strong>${selectedStudent.name}</strong>. <br> Anda dinyatakan <strong>BELUM LULUS</strong>. Silakan Mengulang Kelas 6 Lagi, dan Belajar Lebih Giat Lagi.`;
             }
 
             // Tampilkan Modal Hasil Pengumuman dengan menghapus class hidden
