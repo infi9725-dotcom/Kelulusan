@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pengumuman Kelulusan</title>
+    <title>Aplikasi Kelulusan</title>
     
     <!-- FAVICON LOGO SEKOLAH -->
     <link rel="icon" type="image/png" href="https://iili.io/C2r2LNt.png">
@@ -71,15 +71,23 @@
 
     <!-- LOADING SCREEN OVERLAY (Gaya Bulat Lebih Kecil & Presisi) -->
     <div id="global-loading" class="fixed inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-4 transition-all duration-500">
-        <div class="relative w-12 h-12 mb-3 flex items-center justify-center">
+        <div class="relative w-14 h-14 mb-4 flex items-center justify-center">
             <!-- Spinner Ring -->
             <div class="absolute inset-0 rounded-full border-4 border-brightblue-100"></div>
             <div class="absolute inset-0 rounded-full border-4 border-brightblue-600 border-t-transparent animate-spin"></div>
             <!-- Logo Sekolah (Berada tepat di tengah spinner kecil) -->
-            <img src="https://iili.io/C2r2LNt.png" onerror="this.onerror=null; this.src='https://iili.io/C2r2LNt.th.png';" alt="SDN 22" class="w-5 h-5 object-contain animate-pulse">
+            <img src="https://iili.io/C2r2LNt.png" onerror="this.onerror=null; this.src='https://iili.io/C2r2LNt.th.png';" alt="SDN 22" class="w-6 h-6 object-contain animate-pulse">
         </div>
-        <h3 id="loading-title" class="text-sm md:text-base font-bold text-brightblue-950">Memuat Data Kelulusan...</h3>
-        <p id="loading-subtitle" class="text-[10px] md:text-[11px] text-slate-500 mt-0.5 text-center">Harap Tunggu</p>
+        <h3 id="loading-title" class="text-base font-bold text-brightblue-950">Memuat Data Sekolah...</h3>
+        <p id="loading-subtitle" class="text-[11px] text-slate-500 mt-1 text-center">Sinkronisasi langsung dengan Google Sheets</p>
+    </div>
+
+    <!-- TOMBOL TAMPILAN PENUH (Kanan Atas Layar Luar Beranda) -->
+    <div id="fullscreen-btn-container" class="fixed top-4 right-4 z-40">
+        <button onclick="toggleFullscreen()" class="flex items-center gap-2 px-3 py-2 bg-white/90 hover:bg-white border border-brightblue-200 text-brightblue-600 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 focus:outline-none backdrop-blur-xs">
+            <i id="fullscreen-icon" class="fa-solid fa-expand text-sm"></i>
+            <span id="fullscreen-text" class="hidden sm:inline">Layar Penuh</span>
+        </button>
     </div>
 
     <!-- APP WRAPPER -->
@@ -95,10 +103,10 @@
                     <img src="https://iili.io/C2r2LNt.png" onerror="this.onerror=null; this.src='https://iili.io/C2r2LNt.th.png';" alt="Logo SDN 22 Tanah Keras" class="w-full h-full object-contain">
                 </div>
                 <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight text-brightblue-950 mb-1">
-                    PENGUMUMAN KELULUSAN
+                    APLIKASI KELULUSAN
                 </h1>
                 <p class="text-sm md:text-lg font-semibold text-brightblue-600">
-                    SDN 22 TANAH KERAS
+                    SDN 22 Tanah Keras
                 </p>
                 <div class="w-16 h-1 bg-gradient-to-r from-brightblue-500 to-sky-400 mx-auto mt-3 rounded-full"></div>
             </div>
@@ -128,7 +136,7 @@
                     </div>
                 </div>
 
-                <!-- Tampilan Hitung Mundur 10 Detik Terakhir (Sangat Menarik & Responsif HP) -->
+                <!-- Tampilan Hitung Mundur 10 Detik Terakhir (Gaya Sangat Menarik & Responsif HP) -->
                 <div id="countdown-final-ten" class="hidden flex flex-col items-center justify-center py-3">
                     <p class="text-xs uppercase tracking-wider text-red-500 font-extrabold mb-3 animate-pulse">
                         <i class="fa-solid fa-triangle-exclamation mr-1"></i> Bersiaplah! Pengumuman Segera Dibuka
@@ -215,7 +223,7 @@
                     </button>
                 </div>
                 
-                <p class="text-[10px] md:text-xs text-center text-slate-500 mt-4 leading-relaxed">Tulis nama lengkap.</p>
+                <p class="text-[10px] md:text-xs text-center text-slate-500 mt-4 leading-relaxed">Tulis nama lengkap Anda sesuai data sekolah atau masukkan nomor NISN Anda dengan benar.</p>
             </div>
 
         </main>
@@ -258,7 +266,7 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                 <i class="fa-solid fa-user text-xs"></i>
                             </span>
-                            <input type="text" id="admin-username" required class="w-full pl-8 pr-3 py-2 bg-brightblue-50/50 border border-brightblue-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-brightblue-500" placeholder="Masukkan Username">
+                            <input type="text" id="admin-username" required class="w-full pl-9 pr-3 py-2 bg-brightblue-50/50 border border-brightblue-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-brightblue-500" placeholder="Masukkan Username">
                         </div>
                     </div>
 
@@ -268,7 +276,7 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                 <i class="fa-solid fa-lock text-xs"></i>
                             </span>
-                            <input type="password" id="admin-password" required class="w-full pl-8 pr-3 py-2 bg-brightblue-50/50 border border-brightblue-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-brightblue-500" placeholder="Masukkan Sandi">
+                            <input type="password" id="admin-password" required class="w-full pl-9 pr-3 py-2 bg-brightblue-50/50 border border-brightblue-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-brightblue-500" placeholder="Masukkan Sandi">
                         </div>
                     </div>
 
@@ -691,6 +699,38 @@
             fetchDataFromGoogleSheet();
         };
 
+        // --- FUNGSI TAMPILAN LAYAR PENUH (FULLSCREEN SYSTEM) ---
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    updateFullscreenButton(true);
+                }).catch(err => {
+                    showToast("Gagal mengaktifkan mode layar penuh: " + err.message, "error");
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    updateFullscreenButton(false);
+                });
+            }
+        }
+
+        function updateFullscreenButton(isFullscreen) {
+            const icon = document.getElementById("fullscreen-icon");
+            const text = document.getElementById("fullscreen-text");
+            if (isFullscreen) {
+                icon.className = "fa-solid fa-compress text-sm";
+                if (text) text.innerText = "Layar Normal";
+            } else {
+                icon.className = "fa-solid fa-expand text-sm";
+                if (text) text.innerText = "Layar Penuh";
+            }
+        }
+
+        // Tangkap perubahan fullscreen (misalnya saat menekan tombol ESC)
+        document.addEventListener("fullscreenchange", () => {
+            updateFullscreenButton(!!document.fullscreenElement);
+        });
+
         // --- CUSTOM TOAST NOTIFICATION SYSTEM ---
         function showToast(message, type = 'success') {
             const container = document.getElementById("toast-container");
@@ -734,7 +774,7 @@
         // --- GOOGLE SPREADSHEETS INTEGRATION (GET DATA) ---
         function fetchDataFromGoogleSheet(silent = false) {
             if (!silent) {
-                showLoadingScreen("Memuat Data Kelulusan...", "Harap Tunggu");
+                showLoadingScreen("Memuat Data Kelulusan", "Harap Tunggu");
             }
 
             if (WEB_APP_URL === "ISI_DENGAN_URL_WEB_APP_ANDA") {
@@ -791,10 +831,11 @@
 
         // --- SAVE / UPDATE DATA TO GOOGLE SHEET (POST DATA) ---
         function sendStudentDataToGoogleSheet(studentData, isDelete = false) {
+            // Tampilkan Notifikasi Proses Penyimpanan / Penghapusan sesuai aksi
             if (isDelete) {
-                showLoadingScreen("Sedang Menghapus...", "Harap Tunggu, data sedang dihapus...");
+                showLoadingScreen("Sedang Menghapus...", "Harap Tunggu, data sedang dihapus dari Google Sheets...");
             } else {
-                showLoadingScreen("Sedang Menyimpan...", "Harap Tunggu, data sedang dikirim...");
+                showLoadingScreen("Sedang Menyimpan...", "Harap Tunggu, data sedang dikirim ke Google Sheets...");
             }
 
             if (WEB_APP_URL === "ISI_DENGAN_URL_WEB_APP_ANDA") {
@@ -835,6 +876,7 @@
                 body: JSON.stringify(payload)
             })
             .then(() => {
+                // Perbarui data sementara di peramban pengguna (Menggunakan konversi String aman)
                 if (isDelete) {
                     students = students.filter(s => String(s.id) !== String(studentData.id));
                 } else {
@@ -848,14 +890,17 @@
                 saveToLocalStorage();
                 renderAdminDashboard();
                 
+                // Matikan loading screen terlebih dahulu
                 hideLoadingScreen();
 
+                // Berikan notifikasi keberhasilan di layar
                 if (isDelete) {
                     showToast("Data Berhasil Dihapus!", "success");
                 } else {
                     showToast("Data Berhasil Disimpan!", "success");
                 }
                 
+                // Lakukan sinkronisasi riil dari Google Sheets di latar belakang secara senyap (silent)
                 setTimeout(() => {
                     fetchDataFromGoogleSheet(true);
                 }, 1000);
@@ -983,7 +1028,7 @@
             const file = input.files[0];
             if (!file) return;
 
-            // Batas maksimal file yang bisa dipilih: 10 MB
+            // Batas maksimal file yang bisa dipilih: 10 MB (10 * 1024 * 1024 bytes)
             const maxSizeBytes = 10 * 1024 * 1024;
             if (file.size > maxSizeBytes) {
                 showToast("Gambar terlalu besar! Maksimal berkas yang diizinkan adalah 10MB.", "error");
@@ -1073,7 +1118,7 @@
                 return;
             }
 
-            // Mencari siswa yang namanya atau NISN-nya cocok secara presisi
+            // Mencari siswa yang namanya atau NISN-nya cocok secara presisi (exact match / mengandung kecocokan dekat)
             const matched = students.find(student => 
                 student.name.toLowerCase() === inputVal || 
                 student.name.toLowerCase().includes(inputVal) ||
@@ -1089,12 +1134,12 @@
                 if (matched.photo) {
                     photoContainer.innerHTML = `<img src="${matched.photo}" class="w-full h-full object-cover">`;
                 } else {
-                    photoContainer.innerHTML = `<i class="fa-solid fa-user-graduate text-4xl text-brightblue-500"></i>`;
+                    photoContainer.innerHTML = `<i class="fa-solid fa-user-graduate text-5xl text-brightblue-500"></i>`;
                 }
 
                 // Isi detail Biodata ke Kartu
                 document.getElementById("selected-name").innerText = matched.name;
-                document.getElementById("selected-nisn").innerText = matched.nisn;
+                document.getElementById("selected-nisn").innerText = "NISN / NIS: " + matched.nisn;
                 
                 // Tampilkan Kartu Biodata secara halus
                 biodataCard.classList.remove("hidden");
@@ -1137,31 +1182,31 @@
             const annHeader = document.getElementById("announcement-content");
 
             if (isLulus) {
-                // Konfigurasi visual modal status LULUS (Mobile friendly size)
-                annHeader.className = "w-full max-w-sm md:max-w-md rounded-2xl overflow-hidden shadow-2xl border border-green-500/30 bg-white transition-all transform duration-300";
-                annHeader.firstElementChild.className = "p-5 text-center text-white relative bg-gradient-to-r from-green-500 to-emerald-600";
+                // Konfigurasi visual modal status LULUS
+                annHeader.className = "w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-green-500/30 bg-white transition-all transform duration-300";
+                annHeader.firstElementChild.className = "p-6 text-center text-white relative bg-gradient-to-r from-green-500 to-emerald-600";
                 
-                iconBg.className = "w-14 h-14 md:w-16 md:h-16 mx-auto rounded-full flex items-center justify-center shadow-lg mb-2 text-2xl md:text-3xl bg-white/20 text-white animate-bounce";
+                iconBg.className = "w-20 h-20 mx-auto rounded-full flex items-center justify-center shadow-lg mb-4 text-4xl bg-white/20 text-white animate-bounce";
                 iconBg.innerHTML = '<i class="fa-solid fa-trophy"></i>';
                 
-                annStatus.className = "text-xs font-black px-2.5 py-0.5 bg-green-50 border border-green-500/40 text-green-700 rounded-full";
+                annStatus.className = "text-sm font-black px-2.5 py-1 bg-green-50 border border-green-500/40 text-green-700 rounded-full";
                 annStatus.innerText = "LULUS";
                 
-                messageBox.className = "rounded-xl p-3 text-xs md:text-sm text-center bg-green-50 border border-green-200 text-green-800 leading-relaxed";
+                messageBox.className = "rounded-xl p-4 text-sm text-center bg-green-50 border border-green-200 text-green-800 leading-relaxed";
                 messageBox.innerHTML = `Selamat kepada <strong>${selectedStudent.name}</strong>! <br> Anda dinyatakan <strong>LULUS</strong> dari SDN 22 Tanah Keras. Tetaplah belajar keras di jenjang berikutnya!`;
             } else {
                 // Konfigurasi visual modal status TIDAK LULUS
-                annHeader.className = "w-full max-w-sm md:max-w-md rounded-2xl overflow-hidden shadow-2xl border border-red-500/30 bg-white transition-all transform duration-300";
-                annHeader.firstElementChild.className = "p-5 text-center text-white relative bg-gradient-to-r from-red-500 to-rose-600";
+                annHeader.className = "w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-red-500/30 bg-white transition-all transform duration-300";
+                annHeader.firstElementChild.className = "p-6 text-center text-white relative bg-gradient-to-r from-red-500 to-rose-600";
                 
-                iconBg.className = "w-14 h-14 md:w-16 md:h-16 mx-auto rounded-full flex items-center justify-center shadow-lg mb-2 text-2xl md:text-3xl bg-white/20 text-white";
+                iconBg.className = "w-20 h-20 mx-auto rounded-full flex items-center justify-center shadow-lg mb-4 text-4xl bg-white/20 text-white";
                 iconBg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
                 
-                annStatus.className = "text-xs font-black px-2.5 py-0.5 bg-red-50 border border-red-500/40 text-red-700 rounded-full";
+                annStatus.className = "text-sm font-black px-2.5 py-1 bg-red-50 border border-red-500/40 text-red-700 rounded-full";
                 annStatus.innerText = "TIDAK LULUS";
                 
-                messageBox.className = "rounded-xl p-3 text-xs md:text-sm text-center bg-red-50 border border-red-200 text-red-800 leading-relaxed";
-                messageBox.innerHTML = `Mohon maaf kepada <strong>${selectedStudent.name}</strong>. <br> Anda dinyatakan <strong>BELUM LULUS</strong>. Silakan Mengulang Kelas 6 Lagi, dan Belajar Lebih Giat Lagi.`;
+                messageBox.className = "rounded-xl p-4 text-sm text-center bg-red-50 border border-red-200 text-red-800 leading-relaxed";
+                messageBox.innerHTML = `Mohon maaf kepada <strong>${selectedStudent.name}</strong>. <br> Anda dinyatakan <strong>BELUM LULUS</strong>. Ananda Akan Mengulang Kelas 6, dan Belajar Lebih Giat Lagi.`;
             }
 
             // Tampilkan Modal Hasil Pengumuman dengan menghapus class hidden
@@ -1357,7 +1402,7 @@
             renderAdminStudentTable(matched);
         }
 
-        // --- CRUD LOGIC FOR STUDENT DATA ---
+        // --- CRUD LOGIC FOR STUDENT DATA (FIXED EDIT FUNCTIONALITY WITH STRING ID CASTING) ---
         function handleStudentSubmit(event) {
             event.preventDefault();
             const studentId = document.getElementById("student-id").value;
@@ -1382,17 +1427,20 @@
 
         // FUNGSI EDIT SISWA (Pencarian berbasis ID string)
         function editStudent(studentId) {
+            // Melakukan pencarian menggunakan konversi String agar tipe data selalu cocok
             const student = students.find(s => String(s.id) === String(studentId));
             if (!student) {
                 showToast("Gagal mengambil data siswa untuk diedit.", "error");
                 return;
             }
 
+            // Memasukkan nilai siswa terpilih ke dalam formulir input admin
             document.getElementById("student-id").value = student.id;
             document.getElementById("form-name").value = student.name;
             document.getElementById("form-nisn").value = student.nisn;
             document.getElementById("form-status").value = student.status;
             
+            // Mengembalikan foto siswa ke form
             if (student.photo) {
                 document.getElementById("form-photo-base64").value = student.photo;
                 document.getElementById("form-photo-preview").innerHTML = `<img src="${student.photo}" class="w-full h-full object-cover">`;
@@ -1403,12 +1451,14 @@
                 document.getElementById("form-photo-label").innerText = "Unggah Foto";
             }
 
+            // Mengubah judul formulir & teks tombol submit
             document.getElementById("form-title").innerText = "Edit Data Siswa";
             const submitBtnSpan = document.getElementById("btn-submit").querySelector("span");
             if (submitBtnSpan) submitBtnSpan.innerText = "Perbarui Data";
 
             document.getElementById("btn-cancel").classList.remove("hidden");
             
+            // Melakukan gulir otomatis yang mulus ke area formulir input
             document.getElementById("student-form").scrollIntoView({ behavior: 'smooth' });
             showToast("Silakan edit data siswa pada form.", "success");
         }
@@ -1434,6 +1484,7 @@
 
             document.getElementById("form-title").innerText = "Tambah Data Siswa";
             
+            // Setel ulang teks tombol submit kembali ke awal
             const submitBtnSpan = document.getElementById("btn-submit").querySelector("span");
             if (submitBtnSpan) submitBtnSpan.innerText = "Simpan Data";
 
@@ -1487,6 +1538,7 @@
             const tidakLulus = total - lulus;
             const persentase = total > 0 ? Math.round((lulus / total) * 100) : 0;
             
+            // Generate baris tabel siswa secara dinamis
             let tableRows = students.map((student, idx) => `
                 <tr>
                     <td style="text-align: center; font-family: monospace; padding: 6px 8px;">${idx + 1}</td>
@@ -1506,6 +1558,7 @@
                 `;
             }
 
+            // Membuka jendela cetak baru dengan tata letak dokumen formal & hemat kertas (satu baris ringkasan)
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`
                 <!DOCTYPE html>
@@ -1557,6 +1610,8 @@
                             color: #475569;
                             font-weight: 500;
                         }
+                        
+                        /* Layout ringkasan dalam SATU BARIS (Menggunakan tabel yang kompak) */
                         .summary-table {
                             width: 100%;
                             margin-bottom: 20px;
@@ -1583,6 +1638,7 @@
                             color: #0f172a;
                             margin: 0;
                         }
+
                         table.data-table {
                             width: 100%;
                             border-collapse: collapse;
